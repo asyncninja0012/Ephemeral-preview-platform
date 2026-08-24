@@ -1,0 +1,47 @@
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!infra/**/*.example.key
+
+# Node / Next.js (examples/reference-app)
+node_modules/
+.next/
+out/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Docker
+*.override.local.yml
+docker-compose.override.pr-*.yml
+
+# Terraform / cloud-init artifacts
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+cloud-init.log
+
+# Logs
+*.log
+logs/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Claude
+.claude/settings.local.json
+CLAUDE.md
+docs/PRD.md
