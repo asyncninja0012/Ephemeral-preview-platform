@@ -2,7 +2,7 @@
 set -euo pipefail
 
 : "${REPO_URL:?Set REPO_URL to https://github.com/<owner>/<repo>}"
-: "${RUNNER_TOKEN:?Set RUNNER_TOKEN to a registration token from the repo's Settings > Actions > Runners > New self-hosted runner page (expires in ~1 hour)}"
+: "${RUNNER_TOKEN:?Set RUNNER_TOKEN to a registration token from that repo Settings > Actions > Runners > New self-hosted runner page (expires in ~1 hour)}"
 
 cd "$(dirname "$0")"
 docker compose up -d
