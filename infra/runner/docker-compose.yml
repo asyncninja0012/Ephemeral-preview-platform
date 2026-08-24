@@ -1,0 +1,22 @@
+services:
+  runner:
+    image: myoung34/github-runner:latest
+    environment:
+      REPO_URL: ${REPO_URL}
+      RUNNER_NAME: ${RUNNER_NAME:-preview-runner}
+      RUNNER_TOKEN: ${RUNNER_TOKEN}
+      LABELS: preview
+      RUNNER_WORKDIR: /tmp/runner/work
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner-work:/tmp/runner/work
+    networks:
+      - preview-net
+    restart: unless-stopped
+
+networks:
+  preview-net:
+    external: true
+
+volumes:
+  runner-work:
