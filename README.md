@@ -6,7 +6,7 @@ Automatically deploy an isolated, containerized preview of your full-stack app f
 
 ## What it does
 
-- Every `pull_request` gets its own URL (`pr-42.<your-host>.sslip.io`), its own containers, its own database — isolated from every other open PR on the same host.
+- Every `pull_request` gets its own URL (`pr-42.<your-host-ip-dashed>.sslip.io`), its own containers, its own database — isolated from every other open PR on the same host.
 - Deploys in under 90 seconds, tears down in under 15.
 - 5+ concurrent PR environments on a single small VPS, no port or resource collisions — routing is handled by [Traefik](https://traefik.io/) reading Docker labels, not by juggling host port ranges.
 - Two automated merge gates: a [Trivy](https://github.com/aquasecurity/trivy) vulnerability scan on the built image, and a required successful preview deploy on a self-hosted GitHub Actions runner.
@@ -45,7 +45,9 @@ Full architecture, isolation strategy, security model, and consumer integration 
            with:
              compose-file: docker-compose.yml
              app-port: '3000'
-             base-domain: <your-host-ip>.sslip.io
+             # sslip.io needs the IP dash-separated here — a dotted IP right after a
+             # "pr-<n>" prefix parses ambiguously (e.g. pr-99.127.0.0.1 reads as 99.127.0.0)
+             base-domain: 127-0-0-1.sslip.io
      teardown:
        if: github.event.action == 'closed'
        runs-on: [self-hosted, preview]
