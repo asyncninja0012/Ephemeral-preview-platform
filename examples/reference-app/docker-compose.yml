@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    networks:
+      - preview-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.reference-app.rule=Host(`ref.127.0.0.1.sslip.io`)"
+      - "traefik.http.services.reference-app.loadbalancer.server.port=80"
+
+networks:
+  preview-net:
+    external: true
