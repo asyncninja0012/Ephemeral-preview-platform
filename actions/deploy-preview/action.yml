@@ -58,6 +58,12 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
+        # Probe Traefik directly over preview-net rather than the public URL: the
+        # runner is itself a container, so a sslip.io hostname resolving to a host
+        # loopback/public IP doesn't route back to sibling containers on this box.
+        # This also matches production topology (runner + Traefik sharing the
+        # network) rather than depending on host-loopback routing.
         "${{ github.action_path }}/../../scripts/wait-for-healthy.sh" \
-          --url "${{ steps.render.outputs.url }}" \
+          --url "http://traefik/" \
+          --host-header "pr-${{ inputs.pr-number }}.${{ inputs.base-domain }}" \
           --timeout "${{ inputs.health-timeout }}"
