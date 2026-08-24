@@ -1,0 +1,19 @@
+name: Self-test preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  preview:
+    runs-on: [self-hosted, preview]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./actions/deploy-preview
+        with:
+          pr-number: ${{ github.event.pull_request.number }}
+          compose-file: examples/reference-app/docker-compose.yml
+          service: web
+          app-port: '80'
+          base-domain: 127-0-0-1.sslip.io
