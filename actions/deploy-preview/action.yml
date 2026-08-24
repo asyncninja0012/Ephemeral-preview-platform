@@ -1,0 +1,63 @@
+name: 'Deploy Preview'
+description: 'Deploys an isolated, Traefik-routed preview environment for a pull request using Docker Compose.'
+
+inputs:
+  pr-number:
+    description: 'Pull request number (e.g. github.event.pull_request.number)'
+    required: true
+  compose-file:
+    description: 'Path to the consumer repo docker-compose.yml'
+    required: true
+  service:
+    description: 'Name of the compose service Traefik should route to'
+    required: true
+  app-port:
+    description: 'Port the service listens on inside its container'
+    required: true
+  base-domain:
+    description: 'Base domain for preview URLs (e.g. 127-0-0-1.sslip.io — use the sslip.io dash form, not dotted)'
+    required: true
+  health-timeout:
+    description: 'Seconds to wait for the app to become healthy before failing'
+    required: false
+    default: '60'
+
+outputs:
+  url:
+    description: 'The live preview URL'
+    value: ${{ steps.render.outputs.url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: render
+      shell: bash
+      run: |
+        set -euo pipefail
+        OVERRIDE="docker-compose.override.pr-${{ inputs.pr-number }}.yml"
+        "${{ github.action_path }}/../../scripts/render-compose-override.sh" \
+          --pr "${{ inputs.pr-number }}" \
+          --compose "${{ inputs.compose-file }}" \
+          --service "${{ inputs.service }}" \
+          --port "${{ inputs.app-port }}" \
+          --domain "${{ inputs.base-domain }}" \
+          --out "$OVERRIDE"
+        echo "override=$OVERRIDE" >> "$GITHUB_OUTPUT"
+        echo "url=http://pr-${{ inputs.pr-number }}.${{ inputs.base-domain }}" >> "$GITHUB_OUTPUT"
+
+    - id: up
+      shell: bash
+      run: |
+        set -euo pipefail
+        docker compose -p "pr-${{ inputs.pr-number }}" \
+          -f "${{ inputs.compose-file }}" \
+          -f "${{ steps.render.outputs.override }}" \
+          up -d --build
+
+    - id: healthcheck
+      shell: bash
+      run: |
+        set -euo pipefail
+        "${{ github.action_path }}/../../scripts/wait-for-healthy.sh" \
+          --url "${{ steps.render.outputs.url }}" \
+          --timeout "${{ inputs.health-timeout }}"
