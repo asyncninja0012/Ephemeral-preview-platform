@@ -1,0 +1,30 @@
+name: 'Teardown Preview'
+description: 'Tears down a pull request preview environment: containers, volumes, and networks.'
+
+inputs:
+  pr-number:
+    description: 'Pull request number (e.g. github.event.pull_request.number)'
+    required: true
+  compose-file:
+    description: 'Path to the consumer repo docker-compose.yml'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - id: down
+      shell: bash
+      run: |
+        set -euo pipefail
+        OVERRIDE="docker-compose.override.pr-${{ inputs.pr-number }}.yml"
+        if [ -f "$OVERRIDE" ]; then
+          docker compose -p "pr-${{ inputs.pr-number }}" \
+            -f "${{ inputs.compose-file }}" \
+            -f "$OVERRIDE" \
+            down -v --remove-orphans
+          rm -f "$OVERRIDE"
+        else
+          docker compose -p "pr-${{ inputs.pr-number }}" \
+            -f "${{ inputs.compose-file }}" \
+            down -v --remove-orphans
+        fi
